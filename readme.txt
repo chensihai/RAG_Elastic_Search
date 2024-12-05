@@ -38,8 +38,8 @@ An OpenAI API key.
 Setup and Run
 Clone the Repository
 
-git clone https://github.com/yourusername/your-repo.git
-cd your-repo
+git clone https://github.com/chensihai/RAG_Elastic_Search
+cd RAG_Elastic_Search
 Configure Environment Variables
 
 Copy the sample environment file and update it with your OpenAI API key.
