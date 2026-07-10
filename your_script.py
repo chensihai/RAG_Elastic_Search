@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import wget
 import zipfile
 import pandas as pd
@@ -10,6 +11,8 @@ import openai
 ELASTIC_HOST = os.environ.get('ELASTIC_HOST', 'localhost')
 ELASTIC_PORT = int(os.environ.get('ELASTIC_PORT', 9200))
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+OPENAI_CONTEXT_CHARS = int(os.environ.get('OPENAI_CONTEXT_CHARS', 3000))
+SEARCH_RESULT_PREVIEW_CHARS = int(os.environ.get('SEARCH_RESULT_PREVIEW_CHARS', 500))
 
 # Set OpenAI API key
 openai.api_key = OPENAI_API_KEY
@@ -28,11 +31,20 @@ client = Elasticsearch(
 )
 
 # Test connection
-if client.ping():
-    print("Connected to Elasticsearch")
+for attempt in range(1, 31):
+    if client.ping():
+        print("Connected to Elasticsearch")
+        break
+    print(f"Waiting for Elasticsearch at {ELASTIC_HOST}:{ELASTIC_PORT} ({attempt}/30)")
+    time.sleep(2)
 else:
     print("Could not connect to Elasticsearch")
-    exit()
+    exit(1)
+
+def truncate_text(text, max_chars):
+    if len(text) <= max_chars:
+        return text
+    return text[:max_chars].rsplit(" ", 1)[0] + "..."
 
 # Download the dataset
 def download_dataset():
@@ -112,7 +124,7 @@ def pretty_response(response):
         id = hit['_id']
         score = hit['_score']
         title = hit['_source']['title']
-        text = hit['_source']['text']
+        text = truncate_text(hit['_source']['text'], SEARCH_RESULT_PREVIEW_CHARS)
         pretty_output = (f"\nID: {id}\nTitle: {title}\nSummary: {text}\nScore: {score}")
         print(pretty_output)
 
@@ -141,7 +153,9 @@ def main():
         }
     )
     pretty_response(response)
-    top_hit_summary = response['hits']['hits'][0]['_source']['text']
+    top_hit_text = response['hits']['hits'][0]['_source']['text']
+    top_hit_summary = truncate_text(top_hit_text, OPENAI_CONTEXT_CHARS)
+    print(f"Using {len(top_hit_summary)} of {len(top_hit_text)} characters from top search hit for OpenAI context.")
 
     # Use Chat Completion API
     print("Generating answer using OpenAI's Chat Completion API...")

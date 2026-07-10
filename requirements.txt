@@ -1,4 +1,4 @@
 openai==0.28
 pandas
-elasticsearch
+elasticsearch>=8.9,<9
 wget
