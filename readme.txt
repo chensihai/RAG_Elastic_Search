@@ -47,6 +47,11 @@ Docker and Docker Compose installed.
 An OpenAI API key.
 
 Setup
+Clone the repository:
+
+git clone https://github.com/chensihai/RAG_Elastic_Search
+cd RAG_Elastic_Search
+
 Copy the sample environment file:
 
 cp .env.sample .env
@@ -300,3 +305,8 @@ https://www.elastic.co/guide/en/kibana/current/index.html
 
 OpenAI API documentation:
 https://platform.openai.com/docs/api-reference
+
+OpenAI Cookbook Example: Retrieval Augmented Generation with Elasticsearch and OpenAI
+
+License
+This project is licensed under the MIT License - see the LICENSE file for details.
